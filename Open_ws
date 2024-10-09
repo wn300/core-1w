@@ -1,0 +1,73 @@
+# Activar sesion de WS
+
+
+from selenium import webdriver
+from selenium.webdriver.chrome.service import Service
+from selenium.webdriver.chrome.options import Options
+import requests  # Para verificar la conexión al puerto 9222
+import time
+
+# Ruta al chromedriver y opciones de Chrome
+CHROME_DRIVER_PATH = r"C:\Temp\chromedriver-win64\chromedriver.exe"
+USER_DATA_DIR = r"C:/1wdoc/AccessoWS/WhatsApp_Session"
+DEBUGGER_URL = "http://127.0.0.1:9222"  # URL para verificar la conexión con Chrome
+
+def get_websocket_debugger_url():
+    """Obtiene la URL de WebSocket de depuración de la sesión existente de Chrome."""
+    try:
+        response = requests.get(f"{DEBUGGER_URL}/json")
+        if response.status_code == 200 and len(response.json()) > 0:
+            return response.json()[0]["webSocketDebuggerUrl"]
+        else:
+            print(f"No se pudo obtener la URL de WebSocket de depuración: {response.status_code}")
+            return None
+    except Exception as e:
+        print(f"No se pudo conectar a Chrome para obtener la URL de WebSocket: {e}")
+        return None
+
+def init_driver():
+    chrome_options = Options()
+
+    # Intentar conectarse a la sesión existente utilizando la URL de WebSocket
+    web_socket_url = get_websocket_debugger_url()
+    if web_socket_url:
+        try:
+            chrome_options.add_experimental_option("debuggerAddress", "127.0.0.1:9222")  # Conectar a sesión existente
+            driver = webdriver.Chrome(options=chrome_options)
+            print("Conectado a la sesión existente de Chrome.")
+            return driver
+        except Exception as e:
+            print(f"Error al conectar con la sesión existente de Chrome: {e}")
+            driver = None
+    else:
+        print("No se encontró una sesión existente de Chrome o no se pudo conectar.")
+        driver = None
+
+    # Si no se pudo conectar a la sesión existente, iniciar una nueva sesión de Chrome
+    if not driver:
+        print("Iniciando una nueva sesión de Chrome.")
+        chrome_options.add_argument(f"--remote-debugging-port=9222")
+        chrome_options.add_argument(f"--user-data-dir={USER_DATA_DIR}")
+        service = Service(CHROME_DRIVER_PATH)
+        driver = webdriver.Chrome(service=service, options=chrome_options)
+        print("Nueva sesión de Chrome iniciada.")
+
+    return driver
+
+if __name__ == "__main__":
+    # Conectar a la sesión existente de Chrome en el puerto 9222 o iniciar una nueva
+    driver = init_driver()
+
+    # Verificar si la sesión está activa
+    if driver:
+        try:
+            driver.get("https://web.whatsapp.com")
+            print("Sesión activa detectada en WhatsApp Web.")
+        except Exception as e:
+            print(f"Error al cargar WhatsApp Web: {e}")
+    else:
+        print("No se pudo iniciar sesión en Chrome. Verifica que la sesión esté disponible.")
+
+    # Cerrar el navegador al finalizar
+    #if driver:
+    #    driver.quit()
