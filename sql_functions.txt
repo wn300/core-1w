@@ -1,0 +1,10 @@
+# Funciones SQL y sus consultas
+consulta_costos_semana:
+SELECT SUM(valor_pago) AS total_costos
+FROM invoices
+WHERE fecha_pago >= CURDATE() - INTERVAL (WEEKDAY(CURDATE()) + 1) DAY;
+
+consulta_ventas_mes:
+SELECT SUM(valor_pago) AS total_ventas
+FROM invoices
+WHERE MONTH(fecha_pago) = MONTH(CURDATE()) AND YEAR(fecha_pago) = YEAR(CURDATE());

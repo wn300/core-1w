@@ -1,0 +1,3 @@
+# Intenciones y funciones
+costos semana:consulta_costos_semana
+ventas mes:consulta_ventas_mes
