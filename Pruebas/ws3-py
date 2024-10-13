@@ -1,0 +1,75 @@
+from selenium import webdriver
+from selenium.webdriver.chrome.service import Service
+from selenium.webdriver.common.by import By
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
+from selenium.common.exceptions import NoSuchElementException
+import time
+
+# Ruta del driver de Chrome
+driver_path = "C:/Temp/chromedriver-win64/chromedriver.exe"
+
+# Inicializa el servicio de ChromeDriver
+service = Service(driver_path)
+
+# Inicializa el driver de Selenium
+driver = webdriver.Chrome(service=service)
+
+# Abre WhatsApp Business Web
+driver.get('https://web.whatsapp.com')
+
+# Espera hasta que el usuario escanee el código QR y se abra el chat de WhatsApp Business
+print("Escanea el código QR en WhatsApp Web...")
+
+# Espera a que el cuadro de búsqueda esté disponible
+wait = WebDriverWait(driver, 60)
+search_box = wait.until(EC.presence_of_element_located((By.XPATH, '//div[@contenteditable="true"][@data-tab="3"]')))
+
+# Escribe el nombre del contacto en el cuadro de búsqueda
+contact_name = "1w-room1"  # Nombre del contacto
+search_box.send_keys(contact_name)
+
+# Espera a que se muestre el contacto en los resultados
+wait.until(EC.presence_of_element_located((By.XPATH, f'//span[@title="{contact_name}"]')))
+
+# Selecciona el contacto de la lista de resultados
+contact = driver.find_element(By.XPATH, f'//span[@title="{contact_name}"]')
+contact.click()
+
+# Espera a que se cargue el chat
+time.sleep(2)
+
+# Espera a que se carguen todos los mensajes en el chat (entrantes y salientes)
+wait.until(EC.presence_of_all_elements_located((By.XPATH, '//div[contains(@class, "message-in") or contains(@class, "message-out")]')))
+messages = driver.find_elements(By.XPATH, '//div[contains(@class, "message-in") or contains(@class, "message-out")]')
+
+# Función para intentar diferentes selectores y capturar el texto del mensaje
+def extract_message_text(message):
+    selectors = [
+        './/span[contains(@class, "selectable-text")]',  # Selector original para mensajes de texto
+        './/div[@aria-label]',  # Selector alternativo para mensajes con aria-label
+        './/div[contains(@class, "copyable-text")]',  # Selector para mensajes reenviados o estructurados
+        './/div[contains(@class, "_ahyv")]',  # Selector alternativo visto en la estructura del mensaje
+    ]
+    
+    for selector in selectors:
+        try:
+            element = message.find_element(By.XPATH, selector)
+            if element.text.strip():  # Verificar que el elemento tenga texto
+                return element.text
+        except NoSuchElementException:
+            continue
+    return "<No se encontró texto en el mensaje>"  # Retornar este valor si ningún selector encontró texto
+
+# Iterar a través de los mensajes y extraer el texto usando la función
+for message in messages:
+    try:
+        message_text = extract_message_text(message)
+        print(f"Mensaje: {message_text}")
+    except Exception as e:
+        print(f"Error al extraer el mensaje: {e}")
+
+# Aquí puedes agregar la lógica para responder o realizar alguna acción con los mensajes
+
+# Finaliza la sesión (opcional)
+driver.quit()
