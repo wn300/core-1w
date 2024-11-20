@@ -1,0 +1,12 @@
+fastapi==0.115.4          # Framework para el backend
+uvicorn==0.32.0           # Servidor ASGI para correr FastAPI
+SQLAlchemy==2.0.36        # ORM para interactuar con la base de datos
+asyncpg==0.30.0           # Driver asíncrono para PostgreSQL
+psycopg2-binary==2.9.10   # Driver para PostgreSQL (opcional, si necesitas también conexiones sincrónicas)
+python-dotenv==1.0.0      # Para cargar variables del archivo .env
+pydantic==2.9.2           # Validación de datos en FastAPI
+starlette==0.41.2         # Componente de FastAPI, maneja el enrutamiento y las peticiones
+reflex==0.2.1             # Framework para el frontend (construcción de interfaces web)
+bcrypt                    # Para el manejo y hash de contraseñas
+passlib[bcrypt]           # Librería para hashing de contraseñas
+requests                  # Para hacer solicitudes HTTP (por ejemplo, para la integración con la API de WhatsApp)                  

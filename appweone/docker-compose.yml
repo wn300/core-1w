@@ -1,0 +1,39 @@
+#version: '3.9'
+
+services:
+  backend:
+    build: ./backend
+    container_name: appweone-backend
+    ports:
+      - "8000:8000"
+    volumes:
+      - .:/app
+      - ./.env:/app/.env  # Montar el archivo .env en el contenedor
+    environment:
+      - DATABASE_URL_LOCAL=${DATABASE_URL_LOCAL}
+    depends_on:
+      - db
+    command: ["uvicorn", "backend.app.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
+
+
+ # frontend:
+ #   build: ./frontend
+ #   ports:
+ #     - "3000:3000"
+ #   depends_on:
+ #     - backend
+
+  db:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: u1IqKAmko1dkYLKhUBsel4MdILV8WIuK
+      POSTGRES_DB: db_1w_local
+    ports:
+      - "5433:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+volumes:
+  postgres_data:
+
